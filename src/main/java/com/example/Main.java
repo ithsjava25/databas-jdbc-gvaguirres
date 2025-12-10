@@ -55,10 +55,16 @@ public class Main {
                                 menu();
 
                                 System.out.println("Enter an option:");
-                                int option = sc.nextInt();
+                                int option;
+                                try {
+                                    option = Integer.parseInt(sc.nextLine());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Invalid option");
+                                    continue;
+                                }
 
                                 switch (option) {
-                                    case 0: break;
+                                    case 0: return;
                                     case 1: listMoonMissions(connection);
                                             break;
                                     case 2: moonMissionByMission_id(connection, sc);
@@ -70,6 +76,7 @@ public class Main {
                                     case 5: updateAnAccountPassword(connection, sc);
                                             break;
                                     case 6: deleteAnAccount(connection, sc);
+                                            break;
                                     default: break;
 
                                 }
@@ -101,13 +108,18 @@ public class Main {
         System.out.println("Delete an account");
         System.out.println("Enter user_id: ");
         long userId = sc.nextLong();
+        sc.nextLine();
 
         var query = "delete from account where user_id = ?";
         try(PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setLong(1, userId);
-            statement.executeUpdate();
 
-            System.out.println("Deleted");
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Deleted");
+            } else {
+                System.out.println("No account found with user_id: " + userId);
+            }
         }
     }
 
@@ -158,12 +170,13 @@ public class Main {
         // 3) Count missions for a given year (prompts: year; prints the number of missions launched that year).
         System.out.println("Enter a year: ");
         int year = sc.nextInt();
+        sc.nextLine();
         String query = "select count(*) as number_of_missions from moon_mission where Year(launch_date) = ?";
         try(PreparedStatement statement = connection.prepareStatement(query)){
             statement.setInt(1, year);
             ResultSet result = statement.executeQuery();
             if (result.next()){
-                System.out.println("Number of missions for the year " + year + "is " + result.getInt("number_of_missions"));
+                System.out.println("Number of missions for the year " + year + " is " + result.getInt("number_of_missions"));
             }
             result.close();
 
