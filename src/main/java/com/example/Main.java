@@ -31,9 +31,7 @@ public class Main {
         MoonMissionRepository repository = new MoonMissionRepositoryImpl(dataSource);
         AccountRepository accountRepository = new AccountRepositoryImpl(dataSource);
 
-        Scanner sc = new Scanner(System.in);
-
-        try {
+        try (Scanner sc = new Scanner(System.in)) {
 
             do {
                 boolean login = login(accountRepository, sc);
@@ -57,7 +55,6 @@ public class Main {
 
                         switch (option) {
                             case 0:
-                                 dataSource.close();
                                  return;
                             case 1:
                                 listMoonMissions(repository);
@@ -78,7 +75,7 @@ public class Main {
                                 deleteAnAccount(accountRepository, sc);
                                 break;
                             default:
-                                dataSource.close();
+                                System.out.println("Invalid option, please try again.");
                                 break;
 
                         }
@@ -97,9 +94,12 @@ public class Main {
                 }
             }  while (true);
 
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+
+        } finally {
+            dataSource.close();
+        }
     }
 
     private static void deleteAnAccount(AccountRepository accountRepository, Scanner sc) throws SQLException {

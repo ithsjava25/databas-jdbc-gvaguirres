@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 public class DataSource {
 
-    private static HikariDataSource ds;
+    private final HikariDataSource ds;
 
     public DataSource(String jdbcUrl, String dbUser, String dbPass){
         HikariConfig config = new HikariConfig();
@@ -23,7 +23,7 @@ public class DataSource {
 
     }
 
-    public static Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         return ds.getConnection();
     }
 

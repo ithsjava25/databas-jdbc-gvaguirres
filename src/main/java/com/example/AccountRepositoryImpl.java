@@ -4,7 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Objects;
+
+
 
 public class AccountRepositoryImpl implements AccountRepository {
 
@@ -38,8 +39,16 @@ public class AccountRepositoryImpl implements AccountRepository {
         }
     }
 
+
     @Override
     public void createAnAccount(String firstName, String lastName, String ssn, String password) {
+
+        if (firstName == null || firstName.isBlank() ||
+                lastName == null || lastName.isBlank() ||
+                ssn == null || ssn.isBlank() ||
+                password == null || password.isBlank()) {
+                throw new IllegalArgumentException("All fields are required");
+        }
 
         String query = "insert into account(first_name, last_name, ssn, password) values(?,?,?,?)";
 
@@ -54,6 +63,9 @@ public class AccountRepositoryImpl implements AccountRepository {
             statement.executeUpdate();
 
         } catch (SQLException e) {
+            if (e.getMessage() != null && e.getMessage().contains("Duplicate entry")) {
+                throw new IllegalArgumentException("Account with this SSN already exists", e);
+            }
             throw new RuntimeException(e);
         }
     }
@@ -69,7 +81,11 @@ public class AccountRepositoryImpl implements AccountRepository {
         ) {
             statement.setString(1, newPassword);
             statement.setLong(2, userId);
-            statement.executeUpdate();
+
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new IllegalArgumentException("No account found with user_id: " + userId);
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -87,6 +103,10 @@ public class AccountRepositoryImpl implements AccountRepository {
         ){
             statement.setLong(1, userId);
             int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new IllegalArgumentException("No account found with user_id: " + userId);
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
